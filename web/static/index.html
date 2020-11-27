@@ -68,6 +68,20 @@
             }
 
             @media only screen and (max-width: 997px) {
+                body {
+                    font-size: 1.5em;
+                    overflow: hidden;
+                }
+                div {
+                    font-size: 20px;
+                }
+                h3 {
+                    font-size: 20px;
+                    margin: 3px;
+                }
+                input {
+                    font-size: 20px;
+                }
                 .column {
                     float: none;
                     width: 100%;
@@ -107,7 +121,7 @@
                 <div id="output-container">
                     <div id="output"></div>
                 </div>
-                <div>
+                <div style="margin-top:4px;">
                     <form id="message-form" action="">
                         <input id="input" type="text" value="" placeholder="Message"/>
                         <button id="send">Send</button>
