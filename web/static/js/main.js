@@ -19,6 +19,7 @@ window.addEventListener('load', ()=> {
         d.appendChild(u);
         d.appendChild(m);
         output.appendChild(d);
+        d.scrollTo();
     }
 
     function connect() {
