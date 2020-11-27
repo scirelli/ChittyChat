@@ -1,53 +1,105 @@
 window.addEventListener('load', ()=> {
     var output = document.getElementById('output'),
         input = document.getElementById('input'),
-        ws;
+        ws,
+        username = 'Unknown';
 
-    var print = function(message) {
-        var d = document.createElement('div');
-        d.textContent = message;
+    function print(message) {
+        var d = document.createElement('div'),
+            u = document.createElement('span'),
+            m = document.createElement('span');
+
+        d.classList.add('message');
+        u.classList.add('user-name');
+        m.classList.add('message-text');
+
+        u.textContent = message.username;
+        m.textContent = message.text;
+
+        d.appendChild(u);
+        d.appendChild(m);
         output.appendChild(d);
-    };
+    }
 
-    document.getElementById('open').addEventListener('click', function(evt) {
-        evt.preventDefault();
+    function connect() {
+        return new Promise((resolve)=> {
+            ws = new WebSocket(`ws://${window.location.host}/room/1`);
 
-        if(ws) return false;
+            ws.onopen = function() {
+                resolve(ws);
+            };
+            ws.onclose = function() {
+                print({username: 'Server', text: 'CLOSE'});
+                ws = null;
+            };
+            ws.onmessage = function(evt) {
+                let data = JSON.parse(evt.data);
+                print({username: data.username || 'Server', text: data.text});
+            };
+            ws.onerror = function(evt) {
+                let data = JSON.parse(evt.data);
+                print({username: 'ERROR', text: data.text});
+            };
+        });
+    }
 
-        ws = new WebSocket(`ws://${window.location.host}/room/1`);
-
-        ws.onopen = function() {
-            print('OPEN');
-        };
-        ws.onclose = function() {
-            print('CLOSE');
-            ws = null;
-        };
-        ws.onmessage = function(evt) {
-            print('RESPONSE: ' + evt.data);
-        };
-        ws.onerror = function(evt) {
-            print('ERROR: ' + evt.data);
-        };
-
-        return false;
-    });
-
-    document.getElementById('send').onclick = function() {
-        if(!ws) return false;
-
-        print('SEND: ' + input.value);
+    function sendMessage() {
+        print({username: username, text: input.value});
         ws.send(JSON.stringify({
             content: {
                 text: input.value
             }
         }));
-        return false;
-    };
+        input.value = '';
+    }
 
-    document.getElementById('close').onclick = function() {
+    function setUserName() {
+        username = document.getElementById('username').value;
+        ws.send(JSON.stringify({
+            create: {
+                username: username
+            }
+        }));
+    }
+
+    document.getElementById('open').addEventListener('click', function(evt) {
+        evt.peventDefault();
+
+        if(ws) return false;
+        connect().then(()=>print({username: 'Server', text: 'Connected'}));
+
+        return false;
+    });
+
+    document.getElementById('send').addEventListener('click', (evt)=> {
+        evt.preventDefault();
+        if(!ws) {
+            connect().then(()=> {
+                sendMessage();
+            });
+        }else {
+            sendMessage();
+        }
+
+        return false;
+    });
+
+    document.getElementById('close').addEventListener('click', (evt)=> {
+        evt.preventDefault();
         if(!ws) return false;
         ws.close();
         return false;
-    };
+    });
+
+    document.getElementById('username-send').addEventListener('click', (evt)=> {
+        evt.preventDefault();
+        if(!ws) {
+            connect().then(()=> {
+                setUserName();
+            });
+        }else {
+            setUserName();
+        }
+        return false;
+    });
 });

@@ -1,6 +1,7 @@
 package message
 
 import (
+	"fmt"
 	"github.com/scirelli/httpd-go-test/internal/app/chat/user"
 )
 
@@ -17,7 +18,12 @@ type content struct {
 }
 
 type errorMessage struct {
-	Error string `json:"error"`
+	Text string `json:"text"`
+	Code string `json:"code"`
+}
+
+func (e *errorMessage) String() string {
+	return fmt.Sprintf("Code: %s, Text: %s", e.Code, e.Text)
 }
 
 type createMessage struct {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -33,7 +32,7 @@ type Room struct {
 func NewRoom() Room {
 	return Room{
 		Upgrader: gorwebsocket.Upgrader{},
-		log:      log.New(os.Stderr, "CHAT", log.LstdFlags),
+		log:      log.New(os.Stderr, "CHAT:", log.LstdFlags),
 	}
 }
 
@@ -62,11 +61,11 @@ func (c *Room) listenForMessages(usr *user.User) {
 			c.log.Println("Connection closed.")
 			break
 		}
-		c.processMessage(r, usr)
+		c.parseMessage(r, usr)
 	}
 }
 
-func (c *Room) processMessage(r io.Reader, usr *user.User) {
+func (c *Room) parseMessage(r io.Reader, usr *user.User) {
 	dec := json.NewDecoder(r)
 	for dec.More() {
 		var msg message.Control
@@ -75,17 +74,51 @@ func (c *Room) processMessage(r io.Reader, usr *user.User) {
 			c.log.Println(err)
 			break
 		}
+		msg.User = usr
+		c.processMessage(&msg)
+	}
 
-		if msg.Content.Text != "" {
-			c.Relay(strings.NewReader(msg.Content.Text), usr)
+}
+
+func (c *Room) processMessage(msg *message.Control) {
+	if msg.Error.Code != "" {
+		c.log.Println("Client error response", msg.Error)
+	} else if msg.Create.UserName != "" {
+		msg.User.Name = msg.Create.UserName
+		c.log.Printf("User name set: %s", msg.User.Name)
+
+		response, _ := json.Marshal(struct {
+			Control string `json:"control"`
+			Text    string `json:"text"`
+		}{
+			Control: "USERNAME_SET",
+			Text:    "User name set",
+		})
+
+		SendMessage(strings.NewReader(string(response)), msg.User)
+	} else if msg.Content.Text != "" {
+		var userName = msg.User.Name
+		if userName == "" {
+			userName = strings.SplitN(msg.User.ID.String(), "-", 2)[0]
+			c.log.Printf("User ID: %s", msg.User.ID)
 		}
+
+		response, _ := json.Marshal(struct {
+			Username string `json:"username"`
+			Text     string `json:"text"`
+		}{
+			Username: userName,
+			Text:     msg.Content.Text,
+		})
+
+		c.Relay(strings.NewReader(string(response)), msg.User)
 	}
 }
 
 //AddUser used to add users to the user list.
 func (c *Room) AddUser(usr *user.User) error {
 	var conn *websocket.Connection
-	defer c.log.Println("New user added.")
+	defer c.log.Println("New user added.", usr.ID)
 
 	for i, u := range c.Users {
 		if conn = u.Connection(); !conn.Active() {
@@ -167,6 +200,6 @@ func (c *Room) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		c.log.Print("upgrade:", err)
 		return
 	}
-	var user user.User = user.New(websocket.NewConnection(conn), fmt.Sprint(len(c.Users)))
+	var user user.User = user.New(websocket.NewConnection(conn), "")
 	c.SetupNewUser(&user)
 }
