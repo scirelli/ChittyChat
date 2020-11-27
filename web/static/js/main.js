@@ -23,7 +23,11 @@ window.addEventListener('load', ()=> {
 
     function connect() {
         return new Promise((resolve)=> {
-            ws = new WebSocket(`ws://${window.location.host}/room/1`);
+            if(window.location.protocol.indexOf('s') >= 0) {
+                ws = new WebSocket(`wss://${window.location.host}/room/1`);
+            }else{
+                ws = new WebSocket(`ws://${window.location.host}/room/1`);
+            }
 
             ws.onopen = function() {
                 resolve(ws);
