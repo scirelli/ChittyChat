@@ -14,10 +14,10 @@ import (
 
 	gorwebsocket "github.com/gorilla/websocket"
 
-	"github.com/scirelli/httpd-go-test/internal/app/chat/client"
-	"github.com/scirelli/httpd-go-test/internal/app/chat/message"
-	"github.com/scirelli/httpd-go-test/internal/app/chat/user"
-	"github.com/scirelli/httpd-go-test/internal/pkg/websocket"
+	"github.com/scirelli/ChittyChat/internal/app/chat/client"
+	"github.com/scirelli/ChittyChat/internal/app/chat/message"
+	"github.com/scirelli/ChittyChat/internal/app/chat/user"
+	"github.com/scirelli/ChittyChat/internal/pkg/websocket"
 )
 
 //Room represents a chat room where users can chat.

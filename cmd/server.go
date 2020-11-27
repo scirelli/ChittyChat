@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/scirelli/httpd-go-test/internal/app/chat"
+	"github.com/scirelli/ChittyChat/internal/app/chat"
 )
 
 var addr = flag.String("addr", "localhost:8181", "http service address")

@@ -2,7 +2,7 @@ package message
 
 import (
 	"fmt"
-	"github.com/scirelli/httpd-go-test/internal/app/chat/user"
+	"github.com/scirelli/ChittyChat/internal/app/chat/user"
 )
 
 //Control message that client sends back. The message the client sends back can have any one of these signal messages.

@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/google/uuid"
 
-	"github.com/scirelli/httpd-go-test/internal/pkg/websocket"
+	"github.com/scirelli/ChittyChat/internal/pkg/websocket"
 )
 
 //User a user represents a user in the chat room.

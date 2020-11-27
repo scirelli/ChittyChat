@@ -19,7 +19,7 @@ window.addEventListener('load', ()=> {
         d.appendChild(u);
         d.appendChild(m);
         output.appendChild(d);
-        d.scrollTo();
+        d.scrollIntoView();
     }
 
     function connect() {
