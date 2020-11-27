@@ -67,15 +67,6 @@ window.addEventListener('load', ()=> {
         }));
     }
 
-    document.getElementById('open').addEventListener('click', function(evt) {
-        evt.peventDefault();
-
-        if(ws) return false;
-        connect().then(()=>print({username: 'Server', text: 'Connected'}));
-
-        return false;
-    });
-
     document.getElementById('send').addEventListener('click', (evt)=> {
         evt.preventDefault();
         if(!ws) {
@@ -86,13 +77,6 @@ window.addEventListener('load', ()=> {
             sendMessage();
         }
 
-        return false;
-    });
-
-    document.getElementById('close').addEventListener('click', (evt)=> {
-        evt.preventDefault();
-        if(!ws) return false;
-        ws.close();
         return false;
     });
 
