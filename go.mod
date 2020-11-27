@@ -1,4 +1,4 @@
-module github.com/scirelli/httpd-go-test
+module github.com/scirelli/ChittyChat
 
 go 1.15
 

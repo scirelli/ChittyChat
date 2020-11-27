@@ -1,0 +1,13 @@
+[Unit]
+Description=Chitty Chat Service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/home/pi/Projects/ChittyChat/server
+
+[Install]
+WantedBy=multi-user.target
