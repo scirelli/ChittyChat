@@ -85,7 +85,6 @@ func (c *Room) processMessage(msg *message.Control) {
 		c.log.Println("Client error response", msg.Error)
 	} else if msg.Create.UserName != "" {
 		msg.User.Name = msg.Create.UserName
-		c.log.Printf("User name set: %s", msg.User.Name)
 
 		response, _ := json.Marshal(struct {
 			Control string `json:"control"`
@@ -95,7 +94,8 @@ func (c *Room) processMessage(msg *message.Control) {
 			Text:    "User name set",
 		})
 
-		SendMessage(strings.NewReader(string(response)), msg.User)
+		c.log.Printf("User name set: %s", msg.User.Name)
+		SendMessage(bytes.NewReader(response), msg.User)
 	} else if msg.Content.Text != "" {
 		var userName = msg.User.Name
 		if userName == "" {
@@ -111,7 +111,8 @@ func (c *Room) processMessage(msg *message.Control) {
 			Text:     msg.Content.Text,
 		})
 
-		c.Relay(strings.NewReader(string(response)), msg.User)
+		c.log.Printf("%s\n", response)
+		c.Relay(bytes.NewReader(response), msg.User)
 	}
 }
 

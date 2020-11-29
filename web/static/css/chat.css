@@ -1,0 +1,108 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 3px;
+    overflow: hidden;
+}
+
+.flex-container {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+h3 {
+    text-align: center;
+}
+button {
+    font-weight: bold;
+}
+
+.row {
+    width:100%;
+}
+
+.flex-container .row.header {
+    flex: 0 1 auto;
+}
+
+.flex-container .row.content {
+  flex: 1 1 auto;
+  margin: 3px 0 3px 0;
+  position: relative;
+}
+
+.flex-container .row.footer {
+  flex: 0 1 40px;
+}
+
+.flex-container .row.footer div {
+    height: 100%;
+}
+
+#output-container {
+    height: 100%;
+    min-height: 200px;
+    border: 1px solid black;
+
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    overflow: auto;
+}
+
+#set-name-form {
+    display: flex;
+}
+#username {
+    flex-grow: 3
+}
+#username-send {
+    flex-grow: 1;
+    margin-left: 3px;
+}
+
+.send-message-form {
+    display: flex;
+    height: 100%;
+}
+#send-message-input {
+    flex-grow: 3;
+}
+#send-message-btn {
+    flex-grow: 1;
+    margin-left: 3px;
+}
+
+.user-name {
+    font-weight: bold;
+    margin: 0 3px 0 0;
+}
+.user-name::after {
+    content: ':';
+}
+.message {
+    margin: 3px 0 3px 0;
+}
+.message-text {
+    display: inline;
+}
+
+@media only screen and (max-width: 997px) {
+    .header {
+        font-size: 24px;
+    }
+    h3 {
+        font-size: 20px;
+        margin: 3px;
+    }
+    .content {
+        font-size: 18px;
+    }
+    .footer, input, textarea {
+        font-size: 24px;
+    }
+}
+

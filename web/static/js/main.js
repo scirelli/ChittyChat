@@ -1,20 +1,20 @@
 window.addEventListener('load', ()=> {
     var output = document.getElementById('output'),
-        input = document.getElementById('input'),
+        input = document.getElementById('send-message-input'),
         ws,
         username = 'Unknown';
 
     function print(message) {
         var d = document.createElement('div'),
             u = document.createElement('span'),
-            m = document.createElement('span');
+            m = document.createElement('pre');
 
         d.classList.add('message');
         u.classList.add('user-name');
         m.classList.add('message-text');
 
         u.textContent = message.username;
-        m.textContent = message.text;
+        m.textContent = message.text.trim();
 
         d.appendChild(u);
         d.appendChild(m);
@@ -48,33 +48,46 @@ window.addEventListener('load', ()=> {
         });
     }
 
-    function sendMessage() {
-        print({username: username, text: input.value});
-        ws.send(JSON.stringify({
-            content: {
-                text: input.value
-            }
-        }));
-        input.value = '';
+    function sendToServer(msg) {
+        if(msg) {
+            ws.send(JSON.stringify({
+                content: {
+                    text: msg
+                }
+            }));
+        }
     }
 
-    function setUserName() {
-        username = document.getElementById('username').value;
+    function sendMessage(evt) {
+        let msg = input.value;
+        sendToServer(msg);
+        print({username: username, text: input.value});
+        input.value = '';
+        input.focus();
+        evt.target.disabled = false;
+    }
+
+    function setUserName(un) {
+        username = un;
         ws.send(JSON.stringify({
             create: {
-                username: username
+                username: un
             }
         }));
+        input.focus();
     }
 
-    document.getElementById('send').addEventListener('click', (evt)=> {
+    document.getElementById('send-message-btn').addEventListener('click', (evt)=> {
         evt.preventDefault();
+        if(!input.value) return false;
+
+        evt.target.disabled = true;
         if(!ws) {
             connect().then(()=> {
-                sendMessage();
+                sendMessage(evt);
             });
         }else {
-            sendMessage();
+            sendMessage(evt);
         }
 
         return false;
@@ -82,12 +95,19 @@ window.addEventListener('load', ()=> {
 
     document.getElementById('username-send').addEventListener('click', (evt)=> {
         evt.preventDefault();
+        let username = document.getElementById('username').value;
+
+        if(!username) return false;
+
+        evt.target.disabled = true;
         if(!ws) {
             connect().then(()=> {
-                setUserName();
+                setUserName(username);
+                evt.target.disabled = false;
             });
         }else {
-            setUserName();
+            setUserName(username);
+            evt.target.disabled = false;
         }
         return false;
     });
