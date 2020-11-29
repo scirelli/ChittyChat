@@ -1,8 +1,20 @@
 window.addEventListener('load', ()=> {
     var output = document.getElementById('output'),
         input = document.getElementById('send-message-input'),
+        userNameElem = document.getElementById('username'),
+        usernameSendBtn = document.getElementById('username-send'),
+        sendMsgBtnElm = document.getElementById('send-message-btn'),
         ws,
         username = 'Unknown';
+
+    window.ChittyChat = {
+        get ws() {
+            return ws;
+        },
+        close: function() {
+            if(ws) ws.close();
+        }
+    };
 
     function print(message) {
         var d = document.createElement('div'),
@@ -23,6 +35,8 @@ window.addEventListener('load', ()=> {
     }
 
     function connect() {
+        if(ws) return Promise.resolve(ws);
+
         return new Promise((resolve)=> {
             if(window.location.protocol.indexOf('s') >= 0) {
                 ws = new WebSocket(`wss://${window.location.host}/room/1`);
@@ -35,6 +49,7 @@ window.addEventListener('load', ()=> {
             };
             ws.onclose = function() {
                 print({username: 'Server', text: 'CLOSE'});
+                username = '';
                 ws = null;
             };
             ws.onmessage = function(evt) {
@@ -48,67 +63,82 @@ window.addEventListener('load', ()=> {
         });
     }
 
-    function sendToServer(msg) {
-        if(msg) {
+    function sendChatMsgToServer(msg) {
+        if(!msg) return Promise.reject();
+
+        return connect().then((ws)=> {
             ws.send(JSON.stringify({
                 content: {
                     text: msg
                 }
             }));
-        }
+        });
     }
 
-    function sendMessage(evt) {
-        let msg = input.value;
-        sendToServer(msg);
-        print({username: username, text: input.value});
-        input.value = '';
-        input.focus();
-        evt.target.disabled = false;
+    function sendMessage() {
+        let msg = input.value,
+            promiseOfUserName = Promise.resolve(username);
+        sendMsgBtnElm.disabled = true;
+
+        if(!username) {
+            promiseOfUserName = setUserName(userNameElem.value);
+        }
+
+        return promiseOfUserName.then((username)=> {
+            return sendChatMsgToServer(msg).then(()=>{
+                print({username: username, text: input.value});
+                input.value = '';
+                input.focus();
+                sendMsgBtnElm.disabled = false;
+            });
+        }).catch((e)=> {
+            console.error(e);
+            sendMsgBtnElm.disabled = false;
+            input.focus();
+            print({username: 'Server', text: 'Failed to send message.'});
+        });
+    }
+
+    function sendUserNameToServer(un) {
+        if(!un) return Promise.reject();
+
+        return connect().then((ws)=> {
+            ws.send(JSON.stringify({
+                create: {
+                    username: un
+                }
+            }));
+            return un;
+        });
     }
 
     function setUserName(un) {
-        username = un;
-        ws.send(JSON.stringify({
-            create: {
-                username: un
-            }
-        }));
-        input.focus();
+        usernameSendBtn.disabled = true;
+        return sendUserNameToServer(un).then((un)=> {
+            username = un;
+            input.focus();
+            usernameSendBtn.disabled = false;
+            return un;
+        }).catch((e)=>{
+            userNameElem.focus();
+            username = '';
+            print({username: 'Server', text: 'Failed to set user name. Try again.'});
+            console.error(e);
+            return Promise.reject(e);
+        });
     }
 
-    document.getElementById('send-message-btn').addEventListener('click', (evt)=> {
+    sendMsgBtnElm.addEventListener('click', (evt)=> {
         evt.preventDefault();
         if(!input.value) return false;
-
-        evt.target.disabled = true;
-        if(!ws) {
-            connect().then(()=> {
-                sendMessage(evt);
-            });
-        }else {
-            sendMessage(evt);
-        }
-
+        sendMessage();
         return false;
     });
 
-    document.getElementById('username-send').addEventListener('click', (evt)=> {
+    usernameSendBtn.addEventListener('click', (evt)=> {
         evt.preventDefault();
-        let username = document.getElementById('username').value;
-
-        if(!username) return false;
-
-        evt.target.disabled = true;
-        if(!ws) {
-            connect().then(()=> {
-                setUserName(username);
-                evt.target.disabled = false;
-            });
-        }else {
-            setUserName(username);
-            evt.target.disabled = false;
-        }
+        if(!userNameElem.value) return false;
+        setUserName(userNameElem.value);
         return false;
     });
 });
